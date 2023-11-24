@@ -56,7 +56,23 @@ arg_parser = ArgumentParser(
 )
 arg_parser.add_argument("filepath")
 with open(arg_parser.parse_args().filepath, "r") as f:
+    mlcomment = False
     for l in f.readlines():
-        instructions.append(sum([eval(elem.upper()) for elem in l.split()]))
+        b = []
+        for elem in l.split():
+            if elem.startswith("//"): break
+            if "*/" in elem: mlcomment = False
+            clean = elem.upper()
+            try:
+                clean = clean[:elem.index("/*")]
+            except ValueError:
+                pass
+            try:
+                clean = clean[elem.index("*/") + 2:]
+            except ValueError:
+                pass
+            if not mlcomment and clean: b.append(eval(clean))
+            if "/*" in elem: mlcomment = True
+        if b: instructions.append(sum(b))
 print("v3.0 hex words plain")
 print(" ".join([hex(ins).lstrip("0x").zfill(2) for ins in instructions]))
